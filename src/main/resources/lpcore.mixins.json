@@ -1,0 +1,28 @@
+{
+	"required": true,
+	"priority": 1000,
+	"package": "dev.xkmc.lpcore.mixin",
+	"compatibilityLevel": "JAVA_17",
+	"refmap": "lpcore.refmap.json",
+	"mixins": [
+		"gather.CapabilityManagerMixin",
+		"gather.GameDataMixin",
+		"gather.ObjectHolderRegistryMixin",
+		"gather.RegistryManagerMixin",
+		"init.BootstrapMixin",
+		"init.ServerMainMixin",
+		"init.ServerModLoaderMixin",
+		"task.ForgeHooksClientMixin"
+	],
+	"client": [
+		"init.ClientMainMixin",
+		"init.ClientModLoaderMixin",
+		"init.ForgeLoadingOverlayMixin",
+		"task.ModelBakeryMixin",
+		"task.ModelManagerMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"minVersion": "0.8"
+}

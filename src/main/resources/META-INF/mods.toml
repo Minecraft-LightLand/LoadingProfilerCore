@@ -1,0 +1,25 @@
+modLoader="javafml"
+loaderVersion="[40,)"
+license="LGPL v2.1"
+[[mods]]
+modId="lpcore"
+version="${file.jarVersion}" #mandatory
+displayName="Loading Profiler" #mandatory
+logoFile="lpcore.png" #optional
+credits="Thanks lcy0x1" #optional
+authors="lcy0x1 and LightLand team" #optional
+description='''
+A profiler mod that profide statistics on game start up
+'''
+[[dependencies.lpcore]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47.1.0,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.lpcore]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1,1.20.2)"
+    ordering="NONE"
+    side="BOTH"
