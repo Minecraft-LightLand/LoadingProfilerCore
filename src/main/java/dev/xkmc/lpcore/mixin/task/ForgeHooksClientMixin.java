@@ -1,5 +1,6 @@
 package dev.xkmc.lpcore.mixin.task;
 
+import dev.xkmc.lpcore.client.LPClientTracker;
 import dev.xkmc.lpcore.client.ModelStateTracker;
 import dev.xkmc.lpcore.client.ModelStates;
 import dev.xkmc.lpcore.init.ClientStages;
@@ -15,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -48,6 +50,7 @@ public class ForgeHooksClientMixin {
 	@Inject(method = "onModifyBakingResult", at = @At("TAIL"))
 	private static void loadingprofiler$endModify(Map<ResourceLocation, BakedModel> models, ModelBakery modelBakery, CallbackInfo ci) {
 		ModelStateTracker.step(ModelStates.DISPATCHING);
+		LPClientTracker.setBakedCount(new HashSet<>(models.values()).size());
 	}
 
 }

@@ -18,7 +18,7 @@ public enum ClientStages implements ILoadingStage {
 	GATHER_INJECT_CAPABILITIES(ModStage.GATHER_INJECT_CAPABILITIES),
 	GATHER_LOAD_REGISTRIES(ModStage.GATHER_LOAD_REGISTRIES),
 	LOAD_MODDED_PACK("Gather Modded Resource Packs", ModTracker::switchTracker),
-	GATHER_TASKS("Gather Tasks", LPEarly::nop),
+	ADD_TASKS("Gather Tasks", LPEarly::nop),
 	SETUP_DISPLAY("Setup GUI", LPEarly::nop),
 	INIT_CLIENT_HOOK("Dispatch Client Events", LPEarly::nop),
 	SETUP_VANILLA("Vanilla Client Setup", LPEarly::nop),

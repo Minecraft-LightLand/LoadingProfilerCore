@@ -5,17 +5,11 @@ import dev.xkmc.loadingprofiler.bootstrap.LPBootCore;
 import dev.xkmc.loadingprofiler.bootstrap.LoadingStageGroup;
 import dev.xkmc.lpcore.logdelegate.LogDelegator;
 import dev.xkmc.lpcore.logdelegate.LoggerForFMLModContainer;
-import dev.xkmc.lpcore.logdelegate.ModTracker;
 import dev.xkmc.lpcore.reporting.ReportWriter;
+import dev.xkmc.lpcore.reporting.Summarizer;
 import net.minecraftforge.fml.javafmlmod.FMLModContainer;
 
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
-
 public class LPEarly {
-
-	public static final List<String> LIST = new ArrayList<>();
 
 	public static void info(ILoadingStage stage) {
 		LPBootCore.info(stage);
@@ -35,22 +29,11 @@ public class LPEarly {
 	}
 
 	public static void finish(ILoadingStage stage) {
-		long launcher = 0;
-		long total = 0;
-		for (var chart : LPBootCore.TIME_CHART) {
-			if (chart.stage().group() == LoadingStageGroup.LAUNCHER) {
-				launcher += chart.time();
-			}
-			total += chart.time();
-		}
-		LIST.add("Game took " + total / 1000 + " seconds to bootstrap");
-		for (var chart : LPBootCore.TIME_CHART) {
-			LIST.add("- " + chart.stage().getText() + ": " + comma(chart.time()) + " ms");
-		}
-		LIST.add("--------------------");
-		ModTracker.getReport(LIST);
+		Summarizer.reportLoadTime();
 		if (stage.group() == LoadingStageGroup.SERVER) {
-			ReportWriter.generate(LIST);
+			Summarizer.INS.dash();
+			Summarizer.reportMod(false);
+			ReportWriter.generate(Summarizer.build());
 		}
 	}
 
@@ -68,12 +51,6 @@ public class LPEarly {
 			}
 		}
 		return name;
-	}
-
-	private static final DecimalFormat formatter = new DecimalFormat("#,###");
-
-	public static String comma(long num) {
-		return formatter.format(num);
 	}
 
 

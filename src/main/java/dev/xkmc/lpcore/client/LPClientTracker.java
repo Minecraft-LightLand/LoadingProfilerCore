@@ -3,9 +3,8 @@ package dev.xkmc.lpcore.client;
 import com.mojang.datafixers.util.Pair;
 import dev.xkmc.loadingprofiler.bootstrap.LPBootCore;
 import dev.xkmc.lpcore.init.LPCore;
-import dev.xkmc.lpcore.init.LPEarly;
-import dev.xkmc.lpcore.logdelegate.ModTracker;
 import dev.xkmc.lpcore.reporting.ReportWriter;
+import dev.xkmc.lpcore.reporting.Summarizer;
 
 import java.util.*;
 
@@ -16,6 +15,7 @@ public class LPClientTracker {
 	public static WrappedResourceManager MANAGER;
 	private static ModelAnalyzer.Data models;
 	private static long prevTime = 0;
+	private static int bakedModelCount = 0;
 
 	public static void tickReload(long millis) {
 		if (millis > prevTime + 50) {
@@ -45,14 +45,21 @@ public class LPClientTracker {
 		models = data;
 	}
 
+	public static void setBakedCount(int size) {
+		bakedModelCount = size;
+	}
+
 	private record Time(String name, long async, long sync) {
 
+		public long sec() {
+			return (async + sync) / 1000000000;
+		}
 	}
 
 	public static void fillReport(long time, long noTask, List<WrappedResourceManager.ReloadReportEntry> ans) {
-		var list = LPEarly.LIST;
-		list.add("--------------------");
-		list.add("Reload Manager takes " + time / 1000 + " seconds, loading " + ans.size() + " tasks");
+		var list = Summarizer.INS;
+		list.dash();
+		list.all("Reload Manager takes " + time / 1000 + " seconds, loading " + ans.size() + " tasks");
 		List<Time> minecraft = new ArrayList<>();
 		Map<String, Time> mods = new LinkedHashMap<>();
 		long syncTotal = 0, asyncTotal = 0;
@@ -77,33 +84,43 @@ public class LPClientTracker {
 			asyncTotal += e.async();
 		}
 		minecraft.sort(Comparator.comparingLong(e -> -(e.sync() + e.async())));
-		list.add("<Task>: <main thread time> / <total time>");
+		list.all("Tasks are processed in parallel using multiple threads.");
+		list.detail("<Task>: <main thread time> / <total time>");
 		for (var e : minecraft) {
-			list.add(format(e));
+			if (e.sec() >= 10) list.summary("- %s: %d seconds".formatted(e.name, e.sec()));
+			list.detail(format(e));
 		}
 		List<Time> aggregated = new ArrayList<>(mods.values());
 		aggregated.sort(Comparator.comparingLong(e -> -(e.sync() + e.async())));
 		for (var e : aggregated) {
-			list.add(format(e));
+			if (e.sec() >= 10) list.summary("- %s: %d seconds".formatted(e.name, e.sec()));
+			list.detail(format(e));
 		}
-		list.add("Misc " + misc + " Tasks: " + format(miscSync, miscAsync));
-		if (self != null) list.add("Model Analyzer: " + format(self.sync, self.async));
-		list.add("Main thread utilization: %.2f%%".formatted(syncTotal / 10000d / time));
-		list.add("Off thread utilization: %.2f%%".formatted(asyncTotal / 10000d / time));
-		list.add("Idle time: " + noTask + " ms");
-		list.add("--------------------");
+		list.detail("Misc " + misc + " Tasks: " + format(miscSync, miscAsync));
+		if (self != null) list.detail("Model Analyzer: " + format(self.sync, self.async));
+		list.detail("Main thread utilization: %.2f%%".formatted(syncTotal / 10000d / time));
+		list.all("Off thread utilization: %.2f%%".formatted(asyncTotal / 10000d / time));
+		list.detail("Idle time: " + noTask + " ms");
+		list.dash();
+		Summarizer.reportMod(false);
+		list.dash();
 		reportModel(list);
-		ReportWriter.generate(list);
+		ReportWriter.generate(Summarizer.build());
 	}
 
-	private static void reportModel(List<String> list) {
+	private static void reportModel(Summarizer list) {
 		if (models == null) return;
-		list.add("Model Load Time per Stage:");
+		list.all("Model Load Time per Stage:");
 		for (var e : ModelStateTracker.TIME_CHART) {
-			list.add("- " + e.getFirst().text + ": " + LPEarly.comma(e.getSecond() / 1000000) + " ms");
+			long mil = e.getSecond() / 1000000;
+			if (mil > 10000) {
+				list.summary("- " + e.getFirst().text + ": " + mil / 1000 + " seconds");
+			}
+			list.detail("- " + e.getFirst().text + ": " + Summarizer.comma(mil) + " ms");
 		}
-		list.add("Found " + models.map().size() + " packs");
-		list.add("Loaded " + LPEarly.comma(models.count()) + " models with total size of " + LPEarly.comma(models.size() / 1000) + " KB");
+		list.all("Found " + models.map().size() + " packs");
+		list.all("Loaded " + Summarizer.comma(models.count()) + " model files with total size of " + Summarizer.comma(models.size() / 1000) + " KB");
+		list.all("Baked " + bakedModelCount + " models");
 		List<Pair<String, Long>> data = models.map().entrySet().stream()
 				.map(e -> Pair.of(e.getKey(), e.getValue()))
 				.sorted(Comparator.comparingLong(e -> -e.getSecond()))
@@ -112,14 +129,15 @@ public class LPClientTracker {
 		int miscCount = 0;
 		int thres = MODEL_THRES * 1000;
 		for (var e : data) {
-			if (e.getSecond() < thres) {
-				miscSize += e.getSecond();
+			long size = e.getSecond();
+			if (size < thres) {
+				miscSize += size;
 				miscCount++;
 			} else {
-				list.add("- " + e.getFirst() + ": " + LPEarly.comma(e.getSecond() / 1000) + " KB");
+				list.line(size >= 1000000, "- " + e.getFirst() + ": " + Summarizer.comma(size / 1000) + " KB");
 			}
 		}
-		list.add("Misc " + miscCount + " packs: " + LPEarly.comma(miscSize / 1000) + " KB");
+		list.detail("Misc " + miscCount + " packs: " + Summarizer.comma(miscSize / 1000) + " KB");
 	}
 
 	private static String format(Time time) {
@@ -130,7 +148,7 @@ public class LPClientTracker {
 		int ms = (int) (sync / 1000000);
 		int ma = (int) (async / 1000000);
 		int total = ms + ma;
-		return LPEarly.comma(ms) + " ms / " + LPEarly.comma(total) + " ms";
+		return Summarizer.comma(ms) + " ms / " + Summarizer.comma(total) + " ms";
 	}
 
 }

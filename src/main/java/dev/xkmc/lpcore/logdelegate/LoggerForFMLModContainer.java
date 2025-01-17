@@ -36,8 +36,15 @@ public class LoggerForFMLModContainer extends Logger {
 	}
 
 	@Override
-	public void trace(Marker marker, String message, Object p0, Object p1, Object p2) {
-		super.trace(marker, message, p0, p1, p2);
+	public void trace(Marker marker, String message, Object p0) {
+		super.trace(marker, message, p0);
+		if (message.charAt(0) == 'I') {
+			ModTracker.startSubscribe((String) p0);
+		}
+		if (message.charAt(0) == 'C') {
+			ModTracker.finishSubscribe((String) p0);
+		}
 	}
+
 }
 

@@ -26,7 +26,7 @@ public class ClientModLoaderMixin {
 
 	@Inject(method = "begin", remap = false, at = @At(value = "TAIL"))
 	private static void loadingprofiler$endBegin(Minecraft minecraft, PackRepository pack, ReloadableResourceManager manager, CallbackInfo ci) {
-		LPEarly.info(ClientStages.GATHER_TASKS);
+		LPEarly.info(ClientStages.ADD_TASKS);
 		for (var e : manager.listeners)
 			LPClientTracker.MANAGER.registerReloadListener(e);
 	}
