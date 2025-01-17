@@ -2,11 +2,12 @@ package dev.xkmc.lpcore.init;
 
 import dev.xkmc.loadingprofiler.bootstrap.ILoadingStage;
 import dev.xkmc.loadingprofiler.bootstrap.LoadingStageGroup;
+import dev.xkmc.lpcore.logdelegate.ModTracker;
 
 import java.util.function.Consumer;
 
 public enum ClientStages implements ILoadingStage {
-	CLIENT_START("Client Early Initialization", LPEarly::nop),
+	CLIENT_START("Client Early Initialization", LPEarly::delegateLoggers),
 	BOOTSTRAP("Vanilla Bootstrap Start", LPEarly::nop),
 	BOOTSTRAP_END("Loading User / Options", LPEarly::nop),
 	MINECRAFT_START("Minecraft Client Initialization", LPEarly::nop),
@@ -16,11 +17,14 @@ public enum ClientStages implements ILoadingStage {
 	GATHER_OBJECT_HOLDERS(ModStage.GATHER_OBJECT_HOLDERS),
 	GATHER_INJECT_CAPABILITIES(ModStage.GATHER_INJECT_CAPABILITIES),
 	GATHER_LOAD_REGISTRIES(ModStage.GATHER_LOAD_REGISTRIES),
-	LOAD_MODDED_PACK("Gather Modded Resource Packs", LPEarly::nop),
+	LOAD_MODDED_PACK("Gather Modded Resource Packs", ModTracker::switchTracker),
 	GATHER_TASKS("Gather Tasks", LPEarly::nop),
+	SETUP_DISPLAY("Setup GUI", LPEarly::nop),
 	INIT_CLIENT_HOOK("Dispatch Client Events", LPEarly::nop),
 	SETUP_VANILLA("Vanilla Client Setup", LPEarly::nop),
-	END_MAIN("Parallel Dispatch", LPEarly::finish),
+	CREATE_RELOAD("Initializing Tasks", LPEarly::nop),
+	SETUP_OVERLAY("Setup Loading Screen", LPEarly::nop),
+	END_MAIN("Tasks Working", LPEarly::finish),
 	;
 
 	private final String text;

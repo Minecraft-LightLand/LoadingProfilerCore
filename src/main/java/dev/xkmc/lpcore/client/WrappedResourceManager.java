@@ -1,8 +1,11 @@
 package dev.xkmc.lpcore.client;
 
+import dev.xkmc.lpcore.init.ClientStages;
 import dev.xkmc.lpcore.init.LPCore;
+import dev.xkmc.lpcore.init.LPEarly;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.PeriodicNotificationManager;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
@@ -82,6 +85,7 @@ public class WrappedResourceManager extends ReloadableResourceManager {
 
 	@Override
 	public ReloadInstance createReload(Executor async, Executor sync, CompletableFuture<Unit> start, List<PackResources> resources) {
+		LPEarly.info(ClientStages.CREATE_RELOAD);
 		LPCore.LOGGER.info("Start profiling resource reload");
 		for (var e : list) {
 			e.clear();
@@ -92,6 +96,7 @@ public class WrappedResourceManager extends ReloadableResourceManager {
 		listeners.addAll(list);
 		startTime = Util.getMillis();
 		instance = super.createReload(async, sync, start, resources);
+		LPEarly.info(ClientStages.SETUP_OVERLAY);
 		return instance;
 	}
 
@@ -100,6 +105,8 @@ public class WrappedResourceManager extends ReloadableResourceManager {
 		var ans = new WrapperListener(listener);
 		list.add(ans);
 		super.registerReloadListener(listener);
+		if (listener instanceof PeriodicNotificationManager)
+			LPEarly.info(ClientStages.SETUP_DISPLAY);
 	}
 
 	public record ReloadReportEntry(String module, String name, long async, long sync) {
@@ -119,14 +126,7 @@ public class WrappedResourceManager extends ReloadableResourceManager {
 			syncRun = new AtomicInteger();
 			asyncRun = new AtomicInteger();
 			module = inner.getClass().getModule().getName();
-			String[] names = inner.getClass().getName().split("\\.");
-			name = names[names.length - 1];
-			if (name.contains("$$Lambda")) {
-				String str = name.split("\\$\\$Lambda")[0];
-				if (!str.isEmpty()) {
-					name = str;
-				}
-			}
+			name = LPEarly.parseClassName(inner.getClass());
 			LPCore.LOGGER.info("Wrapped Reload Listener <{}> Created!", module + " - " + name);
 		}
 

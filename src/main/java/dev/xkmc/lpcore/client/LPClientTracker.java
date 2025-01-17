@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import dev.xkmc.loadingprofiler.bootstrap.LPBootCore;
 import dev.xkmc.lpcore.init.LPCore;
 import dev.xkmc.lpcore.init.LPEarly;
+import dev.xkmc.lpcore.logdelegate.ModTracker;
 import dev.xkmc.lpcore.reporting.ReportWriter;
 
 import java.util.*;

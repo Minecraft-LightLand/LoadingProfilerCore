@@ -3,7 +3,11 @@ package dev.xkmc.lpcore.init;
 import dev.xkmc.loadingprofiler.bootstrap.ILoadingStage;
 import dev.xkmc.loadingprofiler.bootstrap.LPBootCore;
 import dev.xkmc.loadingprofiler.bootstrap.LoadingStageGroup;
+import dev.xkmc.lpcore.logdelegate.LogDelegator;
+import dev.xkmc.lpcore.logdelegate.LoggerForFMLModContainer;
+import dev.xkmc.lpcore.logdelegate.ModTracker;
 import dev.xkmc.lpcore.reporting.ReportWriter;
+import net.minecraftforge.fml.javafmlmod.FMLModContainer;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -43,16 +47,34 @@ public class LPEarly {
 		for (var chart : LPBootCore.TIME_CHART) {
 			LIST.add("- " + chart.stage().getText() + ": " + comma(chart.time()) + " ms");
 		}
+		LIST.add("--------------------");
+		ModTracker.getReport(LIST);
 		if (stage.group() == LoadingStageGroup.SERVER) {
 			ReportWriter.generate(LIST);
 		}
 	}
 
+	public static void delegateLoggers(ClientStages stage) {
+		LogDelegator.delegate(FMLModContainer.class, LoggerForFMLModContainer::new);
+	}
+
+	public static String parseClassName(Class<?> cls) {
+		String[] names = cls.getName().split("\\.");
+		String name = names[names.length - 1];
+		if (name.contains("$$Lambda")) {
+			String str = name.split("\\$\\$Lambda")[0];
+			if (!str.isEmpty()) {
+				name = str;
+			}
+		}
+		return name;
+	}
 
 	private static final DecimalFormat formatter = new DecimalFormat("#,###");
 
 	public static String comma(long num) {
 		return formatter.format(num);
 	}
+
 
 }

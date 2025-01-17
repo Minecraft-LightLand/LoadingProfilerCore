@@ -2,6 +2,7 @@ package dev.xkmc.lpcore.init;
 
 import dev.xkmc.loadingprofiler.bootstrap.ILoadingStage;
 import dev.xkmc.loadingprofiler.bootstrap.LoadingStageGroup;
+import dev.xkmc.lpcore.logdelegate.ModTracker;
 
 import java.util.function.Consumer;
 
@@ -14,7 +15,7 @@ public enum ServerStages implements ILoadingStage {
 	GATHER_OBJECT_HOLDERS(ModStage.GATHER_OBJECT_HOLDERS),
 	GATHER_INJECT_CAPABILITIES(ModStage.GATHER_INJECT_CAPABILITIES),
 	GATHER_LOAD_REGISTRIES(ModStage.GATHER_LOAD_REGISTRIES),
-	MOD_SETUP("Mod Setup", LPEarly::nop),
+	MOD_SETUP("Mod Setup", ModTracker::switchTracker),
 	MOD_TALK("Inter-Mod Communication", LPEarly::nop),
 	COMPLETE("Complete Loading", LPEarly::finish),
 	;
