@@ -78,8 +78,9 @@ public class WrappedResourceManager extends ReloadableResourceManager {
 			ans.add(e.getReport());
 		}
 		LPClientTracker.fillReport(totalTime, noTaskTime.get() / 1000000, ans);
-		var vanilla = new ReloadableResourceManager(PackType.CLIENT_RESOURCES);
+		var vanilla = new ReloadableResourceManager(this.type);
 		Minecraft.getInstance().resourceManager = vanilla;
+		vanilla.resources = this.resources;
 		vanilla.listeners.addAll(ACTUAL);
 	}
 
