@@ -87,13 +87,13 @@ public class Summarizer {
 		long gatherActual = LPBootCore.TIME_CHART.stream().filter(e -> e.stage().toString().startsWith("GATHER"))
 				.reduce(0L, (a, b) -> a + b.time(), Long::sum);
 		INS.all("Mods use %d seconds to initialize".formatted(
-				gatherActual / 1000000000L
+				gatherActual / 1000L
 		));
 		INS.all("Mod init happens in parallel as part of Game Bootstrap, in stage <Constructing Mods> ~ <Loading Registries>");
-		INS.all("Mod init takes %.2f seconds CPU time. Thread utilization: %.2f".formatted(
-				gatherTime / 1e9, gatherTime * 100d / gatherActual));
 		INS.all("Mods use %d seconds to load".formatted(
 				ModTracker.RELOAD_TIME.get() / 1000000000L));
+		INS.all("Mod init takes %.2f seconds CPU time. Thread utilization: %.2f%%".formatted(
+				gatherTime * 1e-9, gatherTime * 1e-4 / gatherActual));
 		if (isClient) INS.all("Mod loading is part of reload tasks, in task <ClientModLoader>");
 		var mods = ModTracker.MAP.entrySet().stream().sorted(Comparator.comparingLong(e -> -e.getValue().totalTime.get())).toList();
 		long misc = 0;
