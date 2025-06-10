@@ -1,0 +1,25 @@
+{
+	"required": true,
+	"priority": 1000,
+	"package": "dev.xkmc.loadingprofiler.mixin",
+	"mixins": [
+		"gather.GameDataMixin",
+		"gather.RegistryManagerMixin",
+		"init.BootstrapMixin",
+		"init.ServerMainMixin",
+		"init.ServerModLoaderMixin",
+		"task.ForgeHooksClientMixin"
+	],
+	"client": [
+		"init.ClientMainMixin",
+		"init.ClientModLoaderMixin",
+		"init.ForgeLoadingOverlayMixin",
+		"task.MinecraftMixin",
+		"task.ModelBakeryMixin",
+		"task.ModelManagerMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"minVersion": "0.8"
+}
