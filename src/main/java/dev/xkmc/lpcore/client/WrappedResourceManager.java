@@ -18,7 +18,9 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,6 +31,7 @@ public class WrappedResourceManager extends ReloadableResourceManager {
 	private static final List<PreparableReloadListener> ACTUAL = new ArrayList<>();
 
 	public final List<WrapperListener> list = new ArrayList<>();
+	private final Set<PreparableReloadListener> loaded = new HashSet<>();
 	public long startTime = 0, totalTime = 0;
 	private final AtomicLong noTaskStart = new AtomicLong();
 	private final AtomicLong noTaskTime = new AtomicLong();
@@ -91,6 +94,12 @@ public class WrappedResourceManager extends ReloadableResourceManager {
 		for (var e : list) {
 			e.clear();
 		}
+		for (var e : listeners) {
+			if (!loaded.contains(e)) {
+				list.add(0, new WrapperListener(e));
+				loaded.add(e);
+			}
+		}
 		ACTUAL.addAll(listeners);
 		ACTUAL.removeIf(e -> e instanceof ModelAnalyzer);
 		listeners.clear();
@@ -105,6 +114,7 @@ public class WrappedResourceManager extends ReloadableResourceManager {
 	public void registerReloadListener(PreparableReloadListener listener) {
 		var ans = new WrapperListener(listener);
 		list.add(ans);
+		loaded.add(listener);
 		super.registerReloadListener(listener);
 		if (listener instanceof PeriodicNotificationManager)
 			LPEarly.info(ClientStages.SETUP_DISPLAY);
